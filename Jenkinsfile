@@ -1,11 +1,46 @@
-node {
-    checkout scm
+pipeline{
 
-    docker.withRegistry('https://registry.hub.docker.com', 'dockerHub') {
+	agent {label 'linux'}
 
-        def customImage = docker.build("239910/jenkins-docker demo:${env.BUILD_ID}")
+	environment {
+		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+	}
 
-        /* Push the container to the custom Registry */
-        customImage.push()
-    }
+	stages {
+	    
+	    stage('gitclone') {
+
+			steps {
+				git 'https://github.com//jenkins-docker demo.git'
+			}
+		}
+
+		stage('Build') {
+
+			steps {
+				sh 'docker build -t 239910/jenkins-docker demo:latest .'
+			}
+		}
+
+		stage('Login') {
+
+			steps {
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+			}
+		}
+
+		stage('Push') {
+
+			steps {
+				sh 'docker push 239910/jenkins-docker demo:latest'
+			}
+		}
+	}
+
+	post {
+		always {
+			sh 'docker logout'
+		}
+	}
+
 }
