@@ -1,24 +1,20 @@
 pipeline{
 
-	agent {label 'linux'}
+	agent { label 'linux' }
+	options {
+		buildDiscarder(logRotator(numToKeepStr: '5'))
+	}
 
 	environment {
-		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+		DOCKERHUB_CREDENTIALS = credentials('239910-dockerhub')
 	}
 
 	stages {
-	    
-	    stage('gitclone') {
-
-			steps {
-				git 'https://github.com/muskan-mandhan/jenkins-demo.git'
-			}
-		}
 
 		stage('Build') {
 
 			steps {
-				sh 'docker build -t 239910/jenkins-docker demo:latest .'
+				sh 'docker build -t 239910/dp-alpine:latest .'
 			}
 		}
 
@@ -32,7 +28,7 @@ pipeline{
 		stage('Push') {
 
 			steps {
-				sh 'docker push 239910/jenkins-docker demo:latest'
+				sh 'docker push 239910/dp-alpine:latest'
 			}
 		}
 	}
